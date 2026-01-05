@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaxBot - Chatbot Básico</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .header h1 {
+            color: #4a6fa5;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background-color: #4a6fa5;
+            color: white;
+            padding: 18px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-header .bot-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .bot-avatar {
+            width: 45px;
+            height: 45px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #4a6fa5;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        
+        .bot-name {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .bot-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #4cd964;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .chat-body {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .message {
+            max-width: 75%;
+            padding: 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bot-message {
+            background-color: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+            position: relative;
+        }
+        
+        .bot-message::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            left: -10px;
+            bottom: 0;
+            border-right: 10px solid #e9ecef;
+            border-bottom: 10px solid transparent;
+        }
+        
+        .user-message {
+            background-color: #4a6fa5;
+            color: white;
+            border-bottom-right-radius: 5px;
+            align-self: flex-end;
+            position: relative;
+        }
+        
+        .user-message::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            right: -10px;
+            bottom: 0;
+            border-left: 10px solid #4a6fa5;
+            border-bottom: 10px solid transparent;
+        }
+        
+        .message-sender {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .bot-message .message-sender {
+            color: #4a6fa5;
+        }
+        
+        .user-message .message-sender {
+            color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            text-align: right;
+            margin-top: 8px;
+        }
+        
+        .chat-footer {
+            padding: 20px 25px;
+            background-color: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+        
+        .message-input:focus {
+            border-color: #4a6fa5;
+        }
+        
+        .send-button {
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .send-button:hover {
+            background-color: #3a5a80;
+        }
+        
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 0 25px 20px;
+            background-color: white;
+        }
+        
+        .quick-reply {
+            background-color: #f0f2f5;
+            color: #4a6fa5;
+            border: 1px solid #d0d7e2;
+            padding: 10px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .quick-reply:hover {
+            background-color: #4a6fa5;
+            color: white;
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            max-width: 800px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .instructions h3 {
+            color: #4a6fa5;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 500px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .chat-container {
+                height: 450px;
+            }
+            
+            .chat-header {
+                padding: 15px;
+            }
+            
+            .chat-body {
+                padding: 15px;
+            }
+            
+            .chat-footer {
+                padding: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>LaxBot</h1>
+        <p>Un chatbot básico que puede responder preguntas simples y mantener una conversación contigo</p>
+    </div>
+    
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="bot-info">
+                <div class="bot-avatar">L</div>
+                <div>
+                    <div class="bot-name">LaxBot</div>
+                    <div class="bot-status"><span class="status-dot"></span> En línea</div>
+                </div>
+            </div>
+            <div>
+                <i class="fas fa-robot" style="font-size: 1.5rem;"></i>
+            </div>
+        </div>
+        
+        <div class="chat-body" id="chatBody">
+            <!-- Los mensajes se insertarán aquí mediante JavaScript -->
+            <div class="message bot-message">
+                <div class="message-sender">LaxBot</div>
+                <div>¡Hola! Soy LaxBot, tu asistente virtual. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre el clima, la hora, o simplemente saludar. También puedes usar los botones de abajo para preguntas rápidas.</div>
+                <div class="message-time" id="currentTime"></div>
+            </div>
+        </div>
+        
+        <div class="quick-replies" id="quickReplies">
+            <div class="quick-reply" data-question="¿Cómo estás?">¿Cómo estás?</div>
+            <div class="quick-reply" data-question="¿Qué hora es?">¿Qué hora es?</div>
+            <div class="quick-reply" data-question="¿Qué tiempo hace?">¿Qué tiempo hace?</div>
+            <div class="quick-reply" data-question="¿Quién te creó?">¿Quién te creó?</div>
+        </div>
+        
+        <div class="chat-footer">
+            <input type="text" class="message-input" id="messageInput" placeholder="Escribe tu mensaje aquí..." autocomplete="off">
+            <button class="send-button" id="sendButton">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h3>Instrucciones para usar LaxBot:</h3>
+        <ul>
+            <li>Escribe tu mensaje en el campo de texto y presiona Enter o haz clic en el botón de enviar.</li>
+            <li>Usa los botones de preguntas rápidas para obtener respuestas instantáneas.</li>
+            <li>LaxBot puede responder a saludos, preguntas sobre el clima, la hora, y algunas preguntas básicas.</li>
+            <li>Puedes preguntar "¿Qué puedes hacer?" para conocer las capacidades de LaxBot.</li>
+            <li>Este es un chatbot básico con respuestas predefinidas, por lo que no tiene inteligencia artificial avanzada.</li>
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos del DOM
+            const chatBody = document.getElementById('chatBody');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const quickReplies = document.querySelectorAll('.quick-reply');
+            
+            // Mostrar la hora actual en el primer mensaje
+            document.getElementById('currentTime').textContent = getCurrentTime();
+            
+            // Enviar mensaje al hacer clic en el botón
+            sendButton.addEventListener('click', sendMessage);
+            
+            // Enviar mensaje al presionar Enter
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Agregar funcionalidad a los botones de preguntas rápidas
+            quickReplies.forEach(button => {
+                button.addEventListener('click', function() {
+                    const question = this.getAttribute('data-question');
+                    addMessageToChat(question, 'user');
+                    setTimeout(() => {
+                        processUserMessage(question);
+                    }, 500);
+                });
+            });
+            
+            // Función para enviar mensaje
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                
+                if (message === '') return;
+                
+                // Agregar mensaje del usuario al chat
+                addMessageToChat(message, 'user');
+                
+                // Limpiar campo de entrada
+                messageInput.value = '';
+                
+                // Simular procesamiento y respuesta del bot
+                setTimeout(() => {
+                    processUserMessage(message);
+                }, 800);
+            }
+            
+            // Función para agregar mensaje al chat
+            function addMessageToChat(message, sender) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                
+                if (sender === 'user') {
+                    messageElement.classList.add('user-message');
+                    messageElement.innerHTML = `
+                        <div class="message-sender">Tú</div>
+                        <div>${message}</div>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    `;
+                } else {
+                    messageElement.classList.add('bot-message');
+                    messageElement.innerHTML = `
+                        <div class="message-sender">LaxBot</div>
+                        <div>${message}</div>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    `;
+                }
+                
+                chatBody.appendChild(messageElement);
+                
+                // Auto scroll hacia el último mensaje
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
+            
+            // Función para procesar el mensaje del usuario y generar respuesta
+            function processUserMessage(message) {
+                const normalizedMessage = message.toLowerCase().trim();
+                let response = '';
+                
+                // Saludos
+                if (normalizedMessage.includes('hola') || normalizedMessage.includes('buenos días') || 
+                    normalizedMessage.includes('buenas tardes') || normalizedMessage.includes('buenas noches')) {
+                    response = getGreetingResponse();
+                }
+                // Preguntar cómo está el bot
+                else if (normalizedMessage.includes('cómo estás') || normalizedMessage.includes('qué tal')) {
+                    response = "¡Estoy muy bien, gracias por preguntar! Listo para ayudarte en lo que necesites.";
+                }
+                // Preguntar por la hora
+                else if (normalizedMessage.includes('hora')) {
+                    const now = new Date();
+                    response = `Son las ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}. ¿En qué más puedo ayudarte?`;
+                }
+                // Preguntar por el clima
+                else if (normalizedMessage.includes('tiempo') || normalizedMessage.includes('clima')) {
+                    const weatherResponses = [
+                        "Hoy está soleado y agradable, ¡un buen día para salir!",
+                        "Parece que habrá algunas nubes, pero no se espera lluvia.",
+                        "El pronóstico indica que podría llover más tarde, no olvides llevar paraguas.",
+                        "Hace un poco de frío, te recomiendo usar una chaqueta si sales."
+                    ];
+                    response = weatherResponses[Math.floor(Math.random() * weatherResponses.length)];
+                }
+                // Preguntar quién creó al bot
+                else if (normalizedMessage.includes('quién te creó') || normalizedMessage.includes('quién te hizo')) {
+                    response = "Fui creado por un desarrollador como un proyecto de chatbot básico en HTML, CSS y JavaScript.";
+                }
+                // Preguntar qué puede hacer el bot
+                else if (normalizedMessage.includes('qué puedes hacer') || normalizedMessage.includes('qué sabes hacer')) {
+                    response = "Puedo responder preguntas básicas sobre el clima, la hora, saludar y mantener conversaciones simples. También tengo algunas respuestas predefinidas para preguntas comunes.";
+                }
+                // Preguntar el nombre del bot
+                else if (normalizedMessage.includes('cómo te llamas') || normalizedMessage.includes('tu nombre')) {
+                    response = "Me llamo LaxBot, ¡un placer conocerte!";
+                }
+                // Despedida
+                else if (normalizedMessage.includes('adiós') || normalizedMessage.includes('chao') || 
+                         normalizedMessage.includes('hasta luego') || normalizedMessage.includes('nos vemos')) {
+                    response = "¡Hasta luego! Ha sido un placer ayudarte. Vuelve cuando necesites algo más.";
+                }
+                // Respuesta por defecto
+                else {
+                    const defaultResponses = [
+                        "Interesante pregunta. Lamentablemente, como bot básico, no tengo una respuesta para eso.",
+                        "No estoy seguro de cómo responder a eso. ¿Podrías intentar con otra pregunta?",
+                        "Esa es una pregunta interesante, pero mis capacidades son limitadas. ¿Hay algo más en lo que pueda ayudarte?",
+                        "Como chatbot básico, mi conocimiento es limitado. Puedo responder preguntas sobre la hora, el clima o saludarte."
+                    ];
+                    response = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+                }
+                
+                // Agregar respuesta del bot al chat
+                addMessageToChat(response, 'bot');
+            }
+            
+            // Función para obtener saludo según la hora del día
+            function getGreetingResponse() {
+                const hour = new Date().getHours();
+                let greeting = '';
+                
+                if (hour < 12) {
+                    greeting = '¡Buenos días!';
+                } else if (hour < 19) {
+                    greeting = '¡Buenas tardes!';
+                } else {
+                    greeting = '¡Buenas noches!';
+                }
+                
+                return `${greeting} Soy LaxBot, tu asistente virtual. ¿En qué puedo ayudarte hoy?`;
+            }
+            
+            // Función para obtener la hora actual formateada
+            function getCurrentTime() {
+                const now = new Date();
+                return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            }
+            
+            // Agregar mensaje inicial del bot con animación
+            setTimeout(() => {
+                const initialMessage = document.querySelector('.bot-message');
+                initialMessage.style.animation = 'fadeIn 0.3s ease-in-out';
+            }, 300);
+        });
+    </script>
+</body>
+</html>
